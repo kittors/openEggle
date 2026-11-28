@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Private repository ref (branch, tag, or commit SHA)"
+        required: false
+        default: "main"
+  repository_dispatch:
+    types: [run-ci]
+
+concurrency:
+  group: ci-public-${{ inputs.ref || github.event.client_payload.ref || 'main' }}
+  cancel-in-progress: true
+
+env:
+  CGO_ENABLED: "0"
+  PRIVATE_REPO: "kittors/openEggle-private"
+
+jobs:
+  test-and-lint:
+    name: Test, Vet & Cross-Compile
+    if: github.repository == 'kittors/openEggle'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout private source repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.PRIVATE_REPO }}
+          ref: ${{ inputs.ref || github.event.client_payload.ref || 'main' }}
+          ssh-key: ${{ secrets.PRIVATE_SOURCE_SSH_KEY }}
+          persist-credentials: false
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run architecture and line-limit gate (<= 400 lines)
+        run: ./scripts/check-arch.sh
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Run mygo vet
+        run: go tool mygo vet .
+
+      - name: Run satin-check static audit
+        run: go run github.com/kittors/satin-mygo/cmd/satin-check .
+
+      - name: Run unit and headless UI tests
+        run: go test -p 1 -count=1 ./...
+
+      - name: Cross-compile all desktop targets (zero CGO)
+        run: |
+          GOOS=darwin  GOARCH=arm64 go build ./...
+          GOOS=darwin  GOARCH=amd64 go build ./...
+          GOOS=windows GOARCH=amd64 go build ./...
+          GOOS=linux   GOARCH=amd64 go build ./...
+
+  macos-bundle-smoke:
+    name: macOS Bundle Smoke Build
+    if: github.repository == 'kittors/openEggle'
+    runs-on: macos-latest
+    needs: test-and-lint
+    steps:
+      - name: Checkout private source repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.PRIVATE_REPO }}
+          ref: ${{ inputs.ref || github.event.client_payload.ref || 'main' }}
+          ssh-key: ${{ secrets.PRIVATE_SOURCE_SSH_KEY }}
+          persist-credentials: false
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build macOS app bundle (skip DMG)
+        run: go tool mygo build -platform darwin/arm64 -skip-dmg

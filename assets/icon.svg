@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <!-- openEggle 极简几何应用图标：黑曜石温润方盾 + 象牙白卵石双层叠卡徽记 -->
+  <rect x="28" y="28" width="456" height="456" rx="112" fill="#141416"/>
+  <rect x="30" y="30" width="452" height="452" rx="110" stroke="rgba(255,255,255,0.12)" stroke-width="4"/>
+  <!-- 底层柔和叠影卡（象征多层素材沉淀） -->
+  <path d="M276 116 C356 128 398 206 388 292 C378 370 322 414 252 406 C192 399 156 352 154 286"
+        stroke="rgba(255,255,255,0.22)" stroke-width="18" stroke-linecap="round"/>
+  <!-- 主体温润卵石轮廓（Eggle 极简几何本体） -->
+  <path d="M244 104 C178 104 128 188 128 274 C128 346 178 396 244 396 C310 396 360 346 360 274 C360 188 310 104 244 104 Z"
+        fill="#F5F5F7"/>
+  <!-- 内嵌极简取景卡窗与焦点高光点（象征一键定格截图与卡片收集） -->
+  <rect x="176" y="218" width="136" height="102" rx="22" fill="#141416"/>
+  <circle cx="212" cy="252" r="11" fill="#F5F5F7"/>
+  <path d="M192 302 L228 268 L254 292 L272 276 L296 302"
+        stroke="#F5F5F7" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
